@@ -13,24 +13,30 @@ import UIKit
 }
 
 class FiltersViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, SwitchCellDelegate{
-
-    @IBOutlet weak var tableView: UITableView!
     
+    @IBOutlet weak var tableView: UITableView!
     var categories: [[String:String]]!
     var switchStates = [Int:Bool]()
+    let sections = ["Deals", "Distance", "Sort By" , "Category"]
     
     weak var delegate: FiltersViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.contentInset = UIEdgeInsetsZero;
+
         tableView.dataSource = self
         tableView.delegate = self
 
         categories = yelpCategories()
         
+        styleNavBar((self.navigationController?.navigationBar)!, item: navigationItem)
+        
     }
 
+    // navigation controller
+    
     @IBAction func onCancelButton(sender: AnyObject) {
         dismissViewControllerAnimated(true, completion: nil)
     }
@@ -58,24 +64,59 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         let indexPath = tableView.indexPathForCell(switchCell)!
         
         switchStates[indexPath.row] = value
-        
-        print("her")
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func buildSwitchCell(indexPath: NSIndexPath, label: String, on: Bool) -> UITableViewCell{
         let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
-        
-        cell.switchLabel.text = categories[indexPath.row]["name"]
-        
-        cell.delegate = self
-        
-        cell.onSwitch.on = switchStates[indexPath.row] ?? false
-        
+        cell.switchLabel.text = label
+        cell.onSwitch.on = on
         return cell
     }
     
+    func buildExpandableCell(indexPath: NSIndexPath, label: String, on: Bool) -> UITableViewCell{
+        let cell = tableView.dequeueReusableCellWithIdentifier("ExpandableCell", forIndexPath: indexPath) as! ExpandableCell
+        cell.titleLabel.text = label
+        cell.cueImage.image = UIImage(named: "flower.png")
+        return cell
+    }
+    
+    
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        
+        let on = switchStates[indexPath.row] ?? false
+        
+        if sections[indexPath.section] == "Deals" {
+            return buildSwitchCell(indexPath, label: "Offering a Deal", on: on)
+        } else if sections[indexPath.section] == "Distance"{
+            return buildExpandableCell(indexPath, label: "Distance", on: on)
+
+        } else if sections[indexPath.section] == "Sort By"{
+            return buildExpandableCell(indexPath, label: "Sort By", on: on)
+
+        } else if sections[indexPath.section] == "Category"{
+            return buildSwitchCell(indexPath, label: "Category", on: on)
+        }
+        
+        return buildSwitchCell(indexPath, label: "", on: on)
+    }
+    
+    //sections code
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categories.count
+        
+        print("numberOfRowsInSection \(section)")
+        if sections[section] == "Category"{
+            return categories.count
+        }
+        return 1
+    }
+    
+    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return sections[section]
+    }
+ 
+    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        print("numberOfSectionsInTableView \(sections.count)")
+        return sections.count
     }
     
     func yelpCategories() -> [[String:String]] {

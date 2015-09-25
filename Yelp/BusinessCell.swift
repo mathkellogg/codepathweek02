@@ -17,11 +17,16 @@ class BusinessCell: UITableViewCell {
     @IBOutlet weak var reviewsCountLabel: UILabel!
     @IBOutlet weak var addressLabel: UILabel!
     @IBOutlet weak var categoriesLabel: UILabel!
+    var row = 0
     
     
     var business: Business! {
         didSet {
-            nameLabel.text = business.name
+            if row > 0 {
+                nameLabel.text = "\(row). \(business.name!)"
+            } else {
+                nameLabel.text = business.name
+            }
             thumbImageView.setImageWithURL(business.imageURL)
             categoriesLabel.text = business.categories
             addressLabel.text = business.address
