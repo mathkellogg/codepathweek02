@@ -29,7 +29,7 @@ func styleNavBar(nav:UINavigationBar, item: UINavigationItem){
 class BusinessesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, FiltersViewControllerDelegate, UISearchBarDelegate {
 
     var businesses: [Business]!
-    var filters: [String:Any]!
+    var filters = [String:AnyObject]()
     
     @IBOutlet weak var tableView: UITableView!
     var navSearchBar: UISearchBar?
@@ -111,16 +111,18 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
     
     func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String : AnyObject]) {
         
+        print("hie")
+        
         self.filters = filters
         
-        searchForBusinesses()
+        self.searchForBusinesses()
     }
     
     func searchForBusinesses() {
         
-        let filters = self.filters ?? ["categories":[], "deals": false, "distance": 1000, "sort": YelpSortMode.BestMatched]
+        //let filters = self.filters ?? ["categories":[], "deals": false, "distance": 1000, "sort": YelpSortMode.BestMatched]
         
-        let searchTerm = self.navSearchBar!.text ?? "Restaurants"
+        let searchTerm = self.navSearchBar!.text ?? "Restaurant"
         
         let categories = filters["categories"] as? [String]
         
@@ -128,9 +130,9 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
         
         let distance = filters["distance"] as? Float
         
-        let sort = filters["distance"] as? YelpSortMode
+        let sort = filters["sort_by"] as? YelpSortMode
 
-        
+        print("hwere")
         Business.searchWithTerm(searchTerm, sort: sort, categories: categories, deals: deals, distance: distance){ (businesses: [Business]!, error: NSError!) -> Void in
             
             self.businesses = businesses

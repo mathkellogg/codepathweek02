@@ -18,7 +18,10 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     var categories: [[String:String]]!
     var switchStates = [Int:Bool]()
     let sections = ["Deals", "Distance", "Sort By" , "Category"]
-    
+    var expandable: [String: [String]] = ["Distance": ["Best Match", "2 blocks", "6 blocks", "1 mile", "5 Miles"], "Sort By":["Best Match", "Distance", "Rating"]]
+    var expanded = ["Distance": false, "Sort By": false]
+    var expand_current = ["Distance": "Best Match", "Sort By": "Best Match"]
+    var deal = false
     weak var delegate: FiltersViewControllerDelegate?
     
     override func viewDidLoad() {
@@ -47,6 +50,7 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         var filters = [String:AnyObject]()
         
         var selectedCategories = [String]()
+        
         for (row,isSelected) in switchStates{
             if isSelected {
                 selectedCategories.append(categories[row]["code"]!)
@@ -57,57 +61,114 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
             filters["categories"] = selectedCategories
         }
         
+        filters["distance"] = expand_current["Distance"]
+        filters["sort_by"] = expand_current["Sort By"]
+        filters["deals"] = deal
+        
+        print("\(filters)")
+        
         delegate?.filtersViewController?(self, didUpdateFilters: filters)
     }
     
     func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
         let indexPath = tableView.indexPathForCell(switchCell)!
-        
-        switchStates[indexPath.row] = value
+
+        let section = sections[indexPath.section]
+        print ("\(section)")
+
+        if section == "Deals"{
+            deal = value
+        } else if section ==  "Category" {
+            switchStates[indexPath.row] = value
+        }
     }
     
-    func buildSwitchCell(indexPath: NSIndexPath, label: String, on: Bool) -> UITableViewCell{
+    func buildSwitchCell(indexPath: NSIndexPath, section: String, on: Bool) -> UITableViewCell{
         let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
-        cell.switchLabel.text = label
+        cell.delegate = self
+        if section == "Category" {
+            cell.switchLabel.text = categories[indexPath.row]["name"]
+        } else {
+            cell.switchLabel.text = "Offering a Deal"
+        }
         cell.onSwitch.on = on
         return cell
     }
     
-    func buildExpandableCell(indexPath: NSIndexPath, label: String, on: Bool) -> UITableViewCell{
+    func buildExpandableCell(indexPath: NSIndexPath, section: String, on: Bool) -> UITableViewCell{
         let cell = tableView.dequeueReusableCellWithIdentifier("ExpandableCell", forIndexPath: indexPath) as! ExpandableCell
-        cell.titleLabel.text = label
+        if expanded[section] == false {
+            cell.titleLabel.text = expand_current[section]
+        } else {
+            cell.titleLabel.text = expandable[section]![indexPath.row]
+        }
         cell.cueImage.image = UIImage(named: "flower.png")
         return cell
     }
     
-    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let on = switchStates[indexPath.row] ?? false
-        
-        if sections[indexPath.section] == "Deals" {
-            return buildSwitchCell(indexPath, label: "Offering a Deal", on: on)
-        } else if sections[indexPath.section] == "Distance"{
-            return buildExpandableCell(indexPath, label: "Distance", on: on)
-
-        } else if sections[indexPath.section] == "Sort By"{
-            return buildExpandableCell(indexPath, label: "Sort By", on: on)
-
-        } else if sections[indexPath.section] == "Category"{
-            return buildSwitchCell(indexPath, label: "Category", on: on)
+        let section = sections[indexPath.section]
+        var cell: UITableViewCell
+        print ("section: \(section) Row: \(indexPath.row)")
+        switch section {
+            case "Deals":
+                cell = buildSwitchCell(indexPath, section: section, on: on)
+            case "Distance":
+                cell = buildExpandableCell(indexPath, section: section, on: on)
+            case "Sort By":
+                cell = buildExpandableCell(indexPath, section: section, on: on)
+            case "Category":
+                cell = buildSwitchCell(indexPath, section: section, on: on)
+            default:
+                cell = UITableViewCell()
         }
+        return cell
+    }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         
-        return buildSwitchCell(indexPath, label: "", on: on)
+        let section = sections[indexPath.section]
+        if (section == "Distance" || section == "Sort By"){
+            if expanded[section] == true {
+                expand_current[section] = expandable[section]![indexPath.row]
+                expanded[section] = false
+            } else {
+                expanded[section] = true
+            }
+            tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: UITableViewRowAnimation.Automatic)
+        }
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
     //sections code
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        var numSections: Int
+        let sectionName = sections[section]
         
-        print("numberOfRowsInSection \(section)")
-        if sections[section] == "Category"{
-            return categories.count
+        switch sectionName {
+            case "Deals":
+                numSections = 1
+            case "Distance":
+                if expanded[sectionName] != false{
+                    numSections = expandable[sectionName]!.count
+                } else {
+                    numSections = 1
+                }
+            case "Sort By":
+                if expanded[sectionName] != false{
+                    numSections = expandable[sectionName]!.count
+                } else {
+                    numSections = 1
+                }
+            case "Category":
+                numSections = self.categories.count
+            default:
+                numSections = 0
         }
-        return 1
+        return numSections
+        
     }
     
     func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
