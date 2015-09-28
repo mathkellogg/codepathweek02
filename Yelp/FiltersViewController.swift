@@ -18,7 +18,7 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     var categories: [[String:String]]!
     var switchStates = [Int:Bool]()
     let sections = ["Deals", "Distance", "Sort By" , "Category"]
-    var expandable: [String: [String]] = ["Distance": ["Best Match", "2 blocks", "6 blocks", "1 mile", "5 Miles"], "Sort By":["Best Match", "Distance", "Rating"]]
+    var expandable: [String: [String]] = ["Distance": ["Best Match", "2 blocks", "6 blocks", "1 mile", "5 miles"], "Sort By":["Best Match", "Distance", "Rating"]]
     var expanded = ["Distance": false, "Sort By": false]
     var expand_current = ["Distance": "Best Match", "Sort By": "Best Match"]
     var deal = false
@@ -60,8 +60,17 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         if selectedCategories.count > 0{
             filters["categories"] = selectedCategories
         }
+        let dist = expand_current["Distance"]
+        if dist == "2 blocks" {
+            filters["distance"] = 200
+        } else if dist == "6 blocks"{
+            filters["distance"] = 600
+        } else if dist == "1 mile" {
+            filters["distance"] = 1609
+        } else if dist == "5 miles" {
+            filters["distance"] = 8046
+        }
         
-        filters["distance"] = expand_current["Distance"]
         filters["sort_by"] = expand_current["Sort By"]
         filters["deals"] = deal
         
