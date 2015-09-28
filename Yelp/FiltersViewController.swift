@@ -99,10 +99,16 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         let cell = tableView.dequeueReusableCellWithIdentifier("ExpandableCell", forIndexPath: indexPath) as! ExpandableCell
         if expanded[section] == false {
             cell.titleLabel.text = expand_current[section]
+            cell.state = .Unselected
         } else {
-            cell.titleLabel.text = expandable[section]![indexPath.row]
+            let optText = expandable[section]![indexPath.row]
+            cell.titleLabel.text = optText
+            if expand_current[section] == optText {
+                cell.state = .Selected
+            } else {
+                cell.state = .Selecting
+            }
         }
-        cell.cueImage.image = UIImage(named: "flower.png")
         return cell
     }
     

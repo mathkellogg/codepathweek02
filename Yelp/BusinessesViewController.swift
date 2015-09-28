@@ -136,7 +136,9 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
         Business.searchWithTerm(searchTerm, sort: sort, categories: categories, deals: deals, distance: distance){ (businesses: [Business]!, error: NSError!) -> Void in
             
             self.businesses = businesses
-            
+            self.tableView.reloadData()
+            self.tableView.setNeedsLayout()
+            self.tableView.layoutIfNeeded()
             self.tableView.reloadData()
         }
     }
